@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kumpulan Hyogen JFT 2026 (PG)</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .container {
+        background: rgba(255,255,255,0.95);
+        border-radius: 25px;
+        padding: 35px 30px;
+        max-width: 750px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .container::before {
+        content: '';
+        display: block;
+        height: 6px;
+        background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+        border-radius: 25px 25px 0 0;
+        margin: -35px -30px 20px -30px;
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .title { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+    .title span { color: #e94560; }
+    .stats { display: flex; gap: 12px; font-size: 13px; font-weight: 600; color: #555; }
+    .stats div { background: #f0f0f0; padding: 3px 12px; border-radius: 20px; }
+    .stats .num { color: #e94560; font-size: 16px; }
+    .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #e94560, #feca57); border-radius: 10px; transition: width 0.4s; width: 0%; }
+    .timer-container { text-align: center; margin-bottom: 12px; }
+    .timer {
+        display: inline-block;
+        font-size: 36px;
+        font-weight: 700;
+        color: #1a1a2e;
+        background: #f8f9fa;
+        padding: 2px 20px;
+        border-radius: 12px;
+        min-width: 70px;
+        transition: color 0.2s;
+    }
+    .timer.warning { color: #e94560; animation: blink 0.8s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .question-number { font-size: 12px; color: #888; text-align: center; margin-bottom: 4px; }
+    .question-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a2e;
+        text-align: left;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        min-height: 80px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+    .question-text .highlight { color: #e94560; font-weight: 800; }
+    .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+    .option-btn {
+        padding: 14px 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        background: white;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a2e;
+        transition: all 0.3s;
+        text-align: center;
+        word-break: break-word;
+    }
+    .option-btn:hover:not(.disabled) {
+        border-color: #e94560;
+        background: #fff5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(233,69,96,0.15);
+    }
+    .option-btn.correct { border-color: #2ecc71; background: #d4edda; color: #155724; }
+    .option-btn.wrong { border-color: #e74c3c; background: #f8d7da; color: #721c24; }
+    .option-btn.disabled { cursor: not-allowed; opacity: 0.7; }
+    .option-btn.show-correct { border-color: #2ecc71; background: #d4edda; }
+    .feedback {
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        display: none;
+        min-height: 42px;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct { background: #d4edda; color: #155724; }
+    .feedback.wrong { background: #f8d7da; color: #721c24; }
+    .result-screen { display: none; text-align: center; padding: 15px 0; }
+    .result-screen .score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e94560, #feca57);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        box-shadow: 0 10px 40px rgba(233,69,96,0.3);
+    }
+    .result-screen .score-circle .score-text { font-size: 42px; font-weight: 800; color: white; }
+    .result-screen .score-circle .score-text small { font-size: 18px; font-weight: 400; }
+    .result-screen h2 { font-size: 22px; color: #e94560; margin-bottom: 5px; }
+    .result-screen h3 { font-size: 20px; color: #1a1a2e; margin-bottom: 5px; }
+    .result-screen p { color: #666; font-size: 15px; margin-bottom: 5px; }
+    .result-screen .stat-box {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin: 15px 0;
+        flex-wrap: wrap;
+    }
+    .result-screen .stat-box div {
+        background: #f8f9fa;
+        padding: 8px 18px;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #555;
+    }
+    .result-screen .stat-box strong { color: #e94560; }
+    .kunci-section { margin-top: 20px; text-align: left; }
+    .kunci-section .toggle-kunci {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #3498db, #2980b9);
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 12px;
+    }
+    .kunci-section .toggle-kunci:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(52,152,219,0.4); }
+    .kunci-list {
+        display: none;
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-radius: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        text-align: left;
+    }
+    .kunci-list.show { display: block; }
+    .kunci-list .kunci-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .kunci-list .kunci-item:last-child { border-bottom: none; }
+    .kunci-list .kunci-item .num {
+        display: inline-block;
+        background: #e94560;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 24px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-right: 8px;
+    }
+    .kunci-list .kunci-item.correct-item .num { background: #2ecc71; }
+    .kunci-list .kunci-item.wrong-item .num { background: #e74c3c; }
+    .kunci-list .kunci-item .q-text { font-weight: 600; color: #1a1a2e; }
+    .kunci-list .kunci-item .a-correct { color: #2ecc71; font-weight: 600; }
+    .kunci-list .kunci-item .a-your { color: #e74c3c; font-size: 12px; }
+    .btn-restart {
+        margin-top: 15px;
+        padding: 12px 40px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #e94560, #c0392b);
+        color: white;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.35); }
+    .start-screen { text-align: center; padding: 15px 0; }
+    .start-screen h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 5px; }
+    .start-screen h1 span { color: #e94560; }
+    .start-screen p { color: #666; font-size: 15px; margin-bottom: 5px; }
+    .start-screen .rules {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin: 12px 0 20px;
+        text-align: left;
+        font-size: 14px;
+        color: #555;
+    }
+    .start-screen .rules li { margin: 4px 0; list-style: none; }
+    .btn-start {
+        padding: 14px 50px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #e94560, #c0392b);
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-start:hover { transform: translateY(-3px); box-shadow: 0 10px 35px rgba(233,69,96,0.4); }
+    .hidden { display: none !important; }
+    .identitas-form { text-align: center; padding: 20px 0 10px 0; }
+    .form-group {
+        margin-bottom: 14px;
+        text-align: left;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 16px;
+        color: #1a1a2e;
+        background: white;
+        transition: border-color 0.3s;
+        outline: none;
+    }
+    .form-group input:focus {
+        border-color: #e94560;
+        box-shadow: 0 0 0 3px rgba(233,69,96,0.15);
+    }
+    .btn-submit-identitas {
+        padding: 14px 50px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #e94560, #c0392b);
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+    .btn-submit-identitas:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.35); }
+    .btn-submit-identitas:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .error-msg { color: #e74c3c; font-size: 13px; margin-top: 8px; display: none; }
+    .error-msg.show { display: block; }
+    .logo-pembuka {
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 15px;
+        display: block;
+        border: 4px solid #e94560;
+        box-shadow: 0 8px 25px rgba(233,69,96,0.3);
+    }
+    .save-indicator {
+        position: fixed;
+        top: 20px; right: 20px;
+        background: #2ecc71;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 9999;
+        pointer-events: none;
+    }
+    .save-indicator.show { opacity: 1; }
+    @media (max-width: 500px) {
+        .logo-pembuka { width: 140px; height: 140px; }
+        .question-text { font-size: 16px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="save-indicator" id="saveIndicator">💾 Tersimpan</div>
+
+<div class="container" id="app">
+
+    <!-- START -->
+    <div class="start-screen" id="startScreen">
+        <img src="logo.png" alt="Logo Kuis" class="logo-pembuka"
+             onerror="this.style.display='none'">
+        <h1>Kumpulan Hyogen <span>JFT 2026</span></h1>
+        <p>Bahasa Jepang (PG)</p>
+
+        <div class="identitas-form">
+            <div class="form-group">
+                <label for="inputNama">👤 Nama Lengkap</label>
+                <input type="text" id="inputNama" placeholder="Masukkan nama Anda...">
+            </div>
+            <div class="form-group">
+                <label for="inputKelas">🏫 Kelas</label>
+                <input type="text" id="inputKelas" placeholder="Masukkan kelas Anda...">
+            </div>
+            <div id="errorIdentitas" class="error-msg">⚠️ Nama dan kelas harus diisi!</div>
+            <button class="btn-submit-identitas" id="btnMulai" onclick="submitIdentitas()">Mulai Kuis 🚀</button>
+        </div>
+
+        <div class="rules" style="margin-top:15px;">
+            <li>📝 <strong id="totalInfo">29 soal</strong> Pilihan Ganda</li>
+            <li>💬 Melengkapi percakapan bahasa Jepang</li>
+            <li>⏱️ <strong>10 detik</strong> per soal</li>
+            <li>⏰ Waktu habis = <strong>otomatis salah</strong></li>
+            <li>🔑 Kunci jawaban muncul di akhir</li>
+        </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quizScreen" class="hidden">
+        <div class="header">
+            <div class="title">📚 Kuis <span>Percakapan</span></div>
+            <div class="stats">
+                <div>✅ <span class="num" id="correctCount">0</span></div>
+                <div>📌 <span class="num" id="currentNum">1</span>/<span id="totalNum">29</span></div>
+            </div>
+        </div>
+
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="timer-container"><div class="timer" id="timerDisplay">10</div></div>
+        <div class="question-number" id="qNumber">Soal 1 dari 29</div>
+
+        <div class="question-text" id="questionText">
+            <!-- Soal akan dimuat di sini -->
+        </div>
+
+        <div class="options" id="optionsContainer"></div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-screen" id="resultScreen">
+        <div class="score-circle">
+            <div class="score-text"><span id="finalScore">0</span><small id="scoreTotal">/29</small></div>
+        </div>
+        <h2 id="resultName">👤 Nama Siswa</h2>
+        <h3 id="resultTitle">Luar Biasa! 🌟</h3>
+        <p id="resultDesc">Kamu hebat!</p>
+
+        <div class="stat-box">
+            <div>✅ Benar: <strong id="statBenar">0</strong></div>
+            <div>❌ Salah: <strong id="statSalah">0</strong></div>
+            <div>📊 Nilai: <strong id="statNilai">0</strong></div>
+        </div>
+
+        <div class="kunci-section">
+            <button class="toggle-kunci" id="btnKunci" onclick="toggleKunci()">🔑 Lihat Kunci Jawaban</button>
+            <div class="kunci-list" id="kunciList"></div>
+        </div>
+
+        <div style="margin-top:12px;font-size:14px;color:#2ecc71;" id="saveStatus">
+            💾 Menyimpan data...
+        </div>
+        <button class="btn-restart" onclick="restartQuiz()">🔄 Ulangi Kuis</button>
+    </div>
+</div>
+
+<script>
+// ===== DATA =====
+const DATA = [
+    {
+        soal: "山田：田中さん、（　　　）。ひこうきが おくれたんです。\n田中：いいえ、大丈夫ですよ。",
+        jawaban: "おまたせしました",
+        pilihan: ["おまたせしました", "おじゃまします", "すみません", "ありがとうございます"]
+    },
+    {
+        soal: "客：すみません、バナナを（　　　）。\n店員：はい、どうぞ。",
+        jawaban: "ください",
+        pilihan: ["ください", "いただきます", "どうぞ", "いかがですか"]
+    },
+    {
+        soal: "医者：（　　　）か。\n田中：昨日からちんちんが痛いんです。",
+        jawaban: "どうしたんですか",
+        pilihan: ["なんめいさまですか", "できますか", "どうしたんですか", "おきまりですか"]
+    },
+    {
+        soal: "店員：ご注文は（　　　）か。\n客：はい、これをください。",
+        jawaban: "おきまりですか",
+        pilihan: ["おきまりですか", "ここでおめしあがりですか", "どこで あいますか", "どうでしたか"]
+    },
+    {
+        soal: "客：（　　　）。注文をお願いします。\n店員：はい、かしこまりました。",
+        jawaban: "すみません",
+        pilihan: ["どうぞ", "すみません", "ください", "しんぱいですね"]
+    },
+    {
+        soal: "A：日本語がとても上手ですね。\nB：いいえ、（　　　）、まだまだだめです。",
+        jawaban: "そんなことないです",
+        pilihan: ["そんなことないです", "うれしい", "にがてですから", "いやになりますね"]
+    },
+    {
+        soal: "A：すみません、漢字の読み方が（　　　）。\nB：はい、説明しますね。",
+        jawaban: "よく わからないんですが",
+        pilihan: ["よく わからないんですが", "できますか", "じしんがありません", "どうすればいいですか"]
+    },
+    {
+        soal: "医者：どうしましたか。\n田中：（　　　）。",
+        jawaban: "きのう から あたまが いたいんです",
+        pilihan: ["ここでいいです", "きのう から あたまが いたいんです", "びっくりします", "ここでおめしあがりですか"]
+    },
+    {
+        soal: "B：ごめんください。\nA：どうぞ、入ってください。\nB：（　　　）。",
+        jawaban: "おじゃまします",
+        pilihan: ["おまたせしました", "ありがとうございます", "おじゃまします", "いただきます"]
+    },
+    {
+        soal: "A：田中先生はまだ入院しているんです。\nB：そうですか、（　　　）。",
+        jawaban: "しんぱいですね",
+        pilihan: ["しんぱいですね", "そんなことないです", "いやになりますね", "どうでしたか"]
+    },
+    {
+        soal: "田中：このIphone Pro Max 18、プレゼントです。\nイチャ：わあ、（　　　）。ありがとう。",
+        jawaban: "うれしい",
+        pilihan: ["すみません", "うれしい", "びっくりします", "しんぱいですね"]
+    },
+    {
+        soal: "A：先週、旅行は（　　　）か。\nB：とても楽しかったです。",
+        jawaban: "どうでしたか",
+        pilihan: ["なんめいさまですか", "できますか", "どうでしたか", "いかがですか"]
+    },
+    {
+        soal: "A：明日、いっしょにパーティーに行きませんか。\nB：はい、行きましょう。\nA：（　　　）。\nB：じゃ、改札の前です。",
+        jawaban: "どこで あいますか",
+        pilihan: ["どこで あいますか", "ここでいいです", "おきまりですか", "どうすればいいですか"]
+    },
+    {
+        soal: "A：さっき大きい地震があったね。\nB：うん、急に揺（ゆ）れて、（　　　）。",
+        jawaban: "びっくりします",
+        pilihan: ["いやになりますね", "びっくりします", "しんぱいですね", "にがてですから"]
+    },
+    {
+        soal: "A：夏は好きですか。\nB：いいえ、夏はあまり好きじゃありません。（　　　）、",
+        jawaban: "にがてですから",
+        pilihan: ["そんなことないです", "うれしい", "にがてですから", "よく わからないんですが"]
+    },
+    {
+        soal: "店員：（　　　）か。\n客：いいえ、持ち帰りでお願いします。",
+        jawaban: "ここでおめしあがりですか",
+        pilihan: ["おきまりですか", "ここでおめしあがりですか", "なんめいさまですか", "できますか"]
+    },
+    {
+        soal: "A：財布がおとしましたよ。\nB：あ、（　　　）、ありがとうございます。",
+        jawaban: "すみません",
+        pilihan: ["どうぞ", "ください", "すみません", "おじゃまします"]
+    },
+    {
+        soal: "A：コーヒーはいかがですか。\nB：はい、ありがとうございます。（　　　）。",
+        jawaban: "いただきます",
+        pilihan: ["いただきます", "おまたせしました", "ここでいいです", "どうしましたか"]
+    },
+    {
+        soal: "【電車が込んでいて、おばあさんが立っています。私は座っています。】\nA：おばあさん、（　　　）。\nB：ありがとうございます。",
+        jawaban: "どうぞ",
+        pilihan: ["すみません", "ください", "どうぞ", "いかがですか"]
+    },
+    {
+        soal: "A：家の前ですよ。\nB：はい、（　　　）。ありがとうございます。",
+        jawaban: "ここでいいです",
+        pilihan: ["ここでいいです", "どこで あいますか", "おきまりですか", "おじゃまします"]
+    },
+    {
+        soal: "A：すみません、メールを確認してくれませんか。（　　　）。\nB：いいですよ、じゃ、見せてください。",
+        jawaban: "じしんがありません",
+        pilihan: ["できますか", "じしんがありません", "そんなことないです", "よく わからないんですが"]
+    },
+    {
+        soal: "A：英語が（　　　）か。\nB：はい、少しできます。",
+        jawaban: "できますか",
+        pilihan: ["できますか", "どうでしたか", "なんめいさまですか", "どうすればいいですか"]
+    },
+    {
+        soal: "店員：（　　　）か。\n客：三人です。",
+        jawaban: "なんめいさまですか",
+        pilihan: ["ここでおめしあがりですか", "おきまりですか", "なんめいさまですか", "いかがですか"]
+    },
+    {
+        soal: "A：毎日雨が降って、（　　　）。\nB：そうですね、大変ですね。",
+        jawaban: "いやになりますね",
+        pilihan: ["しんぱいですね", "にがてですから", "いやになりますね", "びっくりします"]
+    },
+    {
+        soal: "A：健康のために、（　　　）か。\nB：毎日運動するようにしています。",
+        jawaban: "どうすればいいですか",
+        pilihan: ["どこで あいますか", "どうすればいいですか", "できますか", "どうでしたか"]
+    },
+    {
+        soal: "A：荷物（にもつ）を持ちましょうか。\nB：（　　　）。助かります。",
+        jawaban: "ありがとうございます",
+        pilihan: ["すみません", "ありがとうございます", "おじゃまします", "いただきます"]
+    },
+    {
+        soal: "A：パーティーの飲み物は（　　　）か。\nB：私が買いに行きます。",
+        jawaban: "どうしますか",
+        pilihan: ["どうしますか", "いかがですか", "ここでいいです", "おきまりですか"]
+    },
+    {
+        soal: "A：コーヒーは（　　　）か。\nB：はい、お願いします。",
+        jawaban: "いかがですか",
+        pilihan: ["できますか", "いかがですか", "どうでしたか", "なんめいさまですか"]
+    },
+    {
+        soal: "A：あ、いたい！\nB：（　　　）。足は大丈夫ですか。\nA：いいえ、大丈夫です。\nB：バスが混（こ）んでいますね。",
+        jawaban: "すみません",
+        pilihan: ["すみません", "どうぞ", "ください", "ありがとうございます"]
+    }
+];
+
+const TOTAL = DATA.length;
+const TIME_PER_QUESTION = 10;
+const STORAGE_KEY = 'kuis_percakapan_jepang_progress';
+const STORAGE_IDENTITAS = 'kuis_percakapan_jepang_identitas';
+
+// ===== STATE =====
+let questions = [];
+let currentIndex = 0;
+let score = 0;
+let timer = TIME_PER_QUESTION;
+let timerInterval = null;
+let isAnswered = false;
+let wrongAnswers = [];
+let allResults = [];
+let userNama = '';
+let userKelas = '';
+let saveTimeout = null;
+
+// ===== DOM =====
+const startScreen    = document.getElementById('startScreen');
+const quizScreen     = document.getElementById('quizScreen');
+const resultScreen   = document.getElementById('resultScreen');
+const questionText   = document.getElementById('questionText');
+const optionsContainer = document.getElementById('optionsContainer');
+const feedback       = document.getElementById('feedback');
+const timerDisplay   = document.getElementById('timerDisplay');
+const correctCount   = document.getElementById('correctCount');
+const currentNum     = document.getElementById('currentNum');
+const totalNum       = document.getElementById('totalNum');
+const progressFill   = document.getElementById('progressFill');
+const qNumber        = document.getElementById('qNumber');
+const finalScore     = document.getElementById('finalScore');
+const scoreTotal     = document.getElementById('scoreTotal');
+const resultName     = document.getElementById('resultName');
+const resultTitle    = document.getElementById('resultTitle');
+const resultDesc     = document.getElementById('resultDesc');
+const statBenar      = document.getElementById('statBenar');
+const statSalah      = document.getElementById('statSalah');
+const statNilai      = document.getElementById('statNilai');
+const kunciList      = document.getElementById('kunciList');
+const btnKunci       = document.getElementById('btnKunci');
+const saveStatus     = document.getElementById('saveStatus');
+const inputNama      = document.getElementById('inputNama');
+const inputKelas     = document.getElementById('inputKelas');
+const btnMulai       = document.getElementById('btnMulai');
+const errorIdentitas = document.getElementById('errorIdentitas');
+const saveIndicator  = document.getElementById('saveIndicator');
+const totalInfo      = document.getElementById('totalInfo');
+
+totalNum.textContent  = TOTAL;
+totalInfo.textContent = TOTAL + ' soal';
+scoreTotal.textContent = '/' + TOTAL;
+
+// ===== UTIL =====
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function showSaveIndicator() {
+    saveIndicator.classList.add('show');
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => saveIndicator.classList.remove('show'), 1200);
+}
+
+function saveProgress() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            questions, currentIndex, score, wrongAnswers, allResults, userNama, userKelas
+        }));
+        showSaveIndicator();
+    } catch (e) {}
+}
+
+function loadProgress() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return null;
+        const p = JSON.parse(saved);
+        if (p && Array.isArray(p.questions) && p.currentIndex < p.questions.length) return p;
+    } catch (e) {}
+    return null;
+}
+
+function clearProgress() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+function saveIdentitas() {
+    try {
+        localStorage.setItem(STORAGE_IDENTITAS, JSON.stringify({ nama: userNama, kelas: userKelas }));
+    } catch (e) {}
+}
+
+function loadIdentitas() {
+    try {
+        const d = JSON.parse(localStorage.getItem(STORAGE_IDENTITAS) || '{}');
+        if (d.nama)  { inputNama.value  = d.nama;  userNama  = d.nama;  }
+        if (d.kelas) { inputKelas.value = d.kelas; userKelas = d.kelas; }
+    } catch (e) {}
+}
+
+// ===== IDENTITAS =====
+function submitIdentitas() {
+    const nama  = inputNama.value.trim();
+    const kelas = inputKelas.value.trim();
+    if (!nama || !kelas) {
+        errorIdentitas.classList.add('show');
+        return;
+    }
+    errorIdentitas.classList.remove('show');
+    userNama = nama;
+    userKelas = kelas;
+    saveIdentitas();
+    btnMulai.disabled = true;
+    btnMulai.textContent = '⏳ Memuat...';
+    setTimeout(startQuiz, 300);
+}
+
+// ===== BUILD QUESTIONS =====
+function buildQuestions() {
+    return shuffle(DATA).map(d => {
+        // Acak pilihan ganda
+        const options = shuffle(d.pilihan);
+        return {
+            question: d.soal,
+            correctAnswer: d.jawaban,
+            options
+        };
+    });
+}
+
+// ===== LOAD QUESTION =====
+function loadQuestion() {
+    if (currentIndex >= questions.length) { endQuiz(); return; }
+    const q = questions[currentIndex];
+
+    // Ganti (　　　) dengan highlight
+    questionText.innerHTML = q.question.replace(/（　　　）/g, '<span class="highlight">（　　　）</span>');
+
+    optionsContainer.innerHTML = '';
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt;
+        btn.dataset.value = opt;
+        btn.onclick = () => selectOption(btn, opt, q.correctAnswer);
+        optionsContainer.appendChild(btn);
+    });
+
+    qNumber.textContent = `Soal ${currentIndex + 1} dari ${TOTAL}`;
+    currentNum.textContent = currentIndex + 1;
+    progressFill.style.width = (currentIndex / TOTAL * 100) + '%';
+
+    isAnswered = false;
+    feedback.className = 'feedback';
+    feedback.style.display = 'none';
+
+    timer = TIME_PER_QUESTION;
+    timerDisplay.textContent = timer;
+    timerDisplay.classList.remove('warning');
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
+        timerDisplay.textContent = timer;
+        if (timer <= 3) timerDisplay.classList.add('warning');
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            if (!isAnswered) handleTimeout(q);
+        }
+    }, 1000);
+}
+
+function handleTimeout(q) {
+    isAnswered = true;
+    document.querySelectorAll('.option-btn').forEach(b => {
+        b.classList.add('disabled');
+        if (b.dataset.value === q.correctAnswer) b.classList.add('show-correct');
+    });
+    feedback.className = 'feedback show wrong';
+    feedback.textContent = `⏰ Waktu habis! Jawaban: ${q.correctAnswer}`;
+    feedback.style.display = 'block';
+
+    allResults.push({
+        question: q.question,
+        yourAnswer: '(tidak dijawab)',
+        correct: q.correctAnswer,
+        isCorrect: false
+    });
+    wrongAnswers.push({ question: q.question, yourAnswer: '(tidak dijawab)', correct: q.correctAnswer });
+
+    saveProgress();
+
+    setTimeout(() => {
+        if (isAnswered) nextQuestion();
+    }, 1500);
+}
+
+function selectOption(btn, selected, correctAns) {
+    if (isAnswered) return;
+    isAnswered = true;
+    clearInterval(timerInterval);
+    timerDisplay.classList.remove('warning');
+
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.classList.add('disabled'));
+
+    const isCorrect = (selected === correctAns);
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        score++;
+        correctCount.textContent = score;
+        feedback.className = 'feedback show correct';
+        feedback.textContent = '✅ Benar!';
+    } else {
+        btn.classList.add('wrong');
+        btns.forEach(b => { if (b.dataset.value === correctAns) b.classList.add('show-correct'); });
+        feedback.className = 'feedback show wrong';
+        feedback.textContent = '❌ Salah! Jawaban: ' + correctAns;
+        wrongAnswers.push({ question: questions[currentIndex].question, yourAnswer: selected, correct: correctAns });
+    }
+    feedback.style.display = 'block';
+
+    allResults.push({
+        question: questions[currentIndex].question,
+        yourAnswer: selected,
+        correct: correctAns,
+        isCorrect: isCorrect
+    });
+
+    saveProgress();
+
+    setTimeout(() => {
+        if (isAnswered) nextQuestion();
+    }, 1000);
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if (currentIndex >= questions.length) endQuiz();
+    else loadQuestion();
+}
+
+// ===== START / END =====
+function startQuiz() {
+    const saved = loadProgress();
+    if (saved && saved.userNama === userNama && saved.userKelas === userKelas) {
+        if (confirm(`📂 Ditemukan progress tersimpan untuk ${userNama}.\nLanjutkan dari soal ${saved.currentIndex + 1}?`)) {
+            questions     = saved.questions;
+            currentIndex  = saved.currentIndex;
+            score         = saved.score;
+            wrongAnswers  = saved.wrongAnswers || [];
+            allResults    = saved.allResults || [];
+            correctCount.textContent = score;
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            resultScreen.style.display = 'none';
+            loadQuestion();
+            return;
+        }
+        clearProgress();
+    }
+    questions = buildQuestions();
+    currentIndex = 0;
+    score = 0;
+    wrongAnswers = [];
+    allResults = [];
+    correctCount.textContent = '0';
+    startScreen.classList.add('hidden');
+    quizScreen.classList.remove('hidden');
+    resultScreen.style.display = 'none';
+    saveProgress();
+    loadQuestion();
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+    quizScreen.classList.add('hidden');
+    resultScreen.style.display = 'block';
+
+    finalScore.textContent = score;
+    resultName.textContent = `👤 ${userNama} (${userKelas})`;
+
+    const salah = TOTAL - score;
+    const nilai = Math.round((score / TOTAL) * 100);
+    statBenar.textContent = score;
+    statSalah.textContent = salah;
+    statNilai.textContent = nilai;
+
+    let title, desc;
+    if (nilai === 100)    { title = '🏆 Sempurna!';      desc = 'Kamu menguasai semua!'; }
+    else if (nilai >= 80) { title = '🌟 Sangat Bagus!';  desc = 'Kamu sangat paham!'; }
+    else if (nilai >= 60) { title = '👍 Cukup Baik!';    desc = 'Terus belajar, semangat!'; }
+    else if (nilai >= 40) { title = '📖 Terus Belajar!'; desc = 'Jangan menyerah, coba lagi!'; }
+    else                  { title = '💪 Semangat!';      desc = 'Coba lagi, pasti bisa!'; }
+    resultTitle.textContent = title;
+    resultDesc.textContent = desc;
+
+    buildKunci();
+
+    saveStatus.innerHTML = '✅ Selesai';
+    saveStatus.style.color = '#2ecc71';
+
+    clearProgress();
+}
+
+function buildKunci() {
+    kunciList.innerHTML = '';
+    allResults.forEach((r, i) => {
+        const item = document.createElement('div');
+        item.className = 'kunci-item ' + (r.isCorrect ? 'correct-item' : 'wrong-item');
+
+        const num = document.createElement('span');
+        num.className = 'num';
+        num.textContent = i + 1;
+
+        const qText = document.createElement('span');
+        qText.className = 'q-text';
+        // Hilangkan tag HTML dari soal, ganti dengan teks biasa untuk kunci
+        qText.textContent = r.question.replace(/<[^>]*>/g, '') + ' → ';
+
+        const aCorrect = document.createElement('span');
+        aCorrect.className = 'a-correct';
+        aCorrect.textContent = r.correct;
+
+        item.appendChild(num);
+        item.appendChild(qText);
+        item.appendChild(aCorrect);
+
+        if (!r.isCorrect) {
+            item.appendChild(document.createElement('br'));
+            const aYour = document.createElement('span');
+            aYour.className = 'a-your';
+            aYour.textContent = '   Jawabanmu: ' + r.yourAnswer;
+            item.appendChild(aYour);
+        }
+        kunciList.appendChild(item);
+    });
+}
+
+function toggleKunci() {
+    kunciList.classList.toggle('show');
+    btnKunci.textContent = kunciList.classList.contains('show')
+        ? '🔒 Sembunyikan Kunci Jawaban'
+        : '🔑 Lihat Kunci Jawaban';
+}
+
+function restartQuiz() {
+    resultScreen.style.display = 'none';
+    startScreen.classList.remove('hidden');
+    quizScreen.classList.add('hidden');
+    score = 0; currentIndex = 0; wrongAnswers = []; allResults = [];
+    correctCount.textContent = '0';
+    clearInterval(timerInterval);
+    clearProgress();
+    inputNama.value = ''; inputKelas.value = '';
+    userNama = ''; userKelas = '';
+    btnMulai.disabled = false;
+    btnMulai.textContent = 'Mulai Kuis 🚀';
+    btnKunci.textContent = '🔑 Lihat Kunci Jawaban';
+    kunciList.classList.remove('show');
+    kunciList.innerHTML = '';
+}
+
+window.addEventListener('beforeunload', function(e) {
+    if (currentIndex > 0 && currentIndex < questions.length) {
+        saveProgress();
+        e.preventDefault();
+        e.returnValue = 'Kuis sedang berlangsung. Yakin ingin keluar?';
+        return e.returnValue;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', loadIdentitas);
+</script>
+
+</body>
+</html>
